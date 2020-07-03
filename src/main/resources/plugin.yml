@@ -1,0 +1,7 @@
+name: "Source"
+version: "1.0"
+authors: ["EvilBlock", "joeleoli"]
+description: "Essential server features"
+main: "net.evilblock.source.Source"
+depend:
+  - Cubed
