@@ -23,4 +23,9 @@ object Permissions {
 
     const val CAPTCHA_BYPASS = "source.captcha.bypass"
 
+    const val LOG_VIEW = "source.logs"
+
+    const val ANNOUNCEMENT_EDITOR = "source.announcement.editor"
+    const val DISALLOWED_COMMANDS_EDITOR = "source.disallowed-cmds.editor"
+
 }

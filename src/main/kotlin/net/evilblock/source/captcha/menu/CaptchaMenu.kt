@@ -24,7 +24,7 @@ class CaptchaMenu : Menu() {
     private val color: ChatColor = ColorUtil.CHAT_COLOR_TO_WOOL_DATA.keys.random()
 
     override fun getTitle(player: Player): String {
-        return "${color}Select the ${ChatColor.BOLD}${Formats.capitalizeFully(color.name)} ${color}wool"
+        return "Pick the $color${ChatColor.BOLD}${Formats.capitalizeFully(color.name)} ${ChatColor.RESET}wool"
     }
 
     override fun getButtons(player: Player): Map<Int, Button> {

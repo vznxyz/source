@@ -18,7 +18,7 @@ object CaptchaHandler {
     private val completedCaptcha: MutableSet<UUID> = hashSetOf()
 
     fun initialLoad() {
-        Tasks.asyncTimer(20L, 20L) {
+        Tasks.asyncTimer(40L, 40L) {
             for (player in Bukkit.getOnlinePlayers()) {
                 if (!hasCompletedCaptcha(player.uniqueId)) {
                     if (!Menu.currentlyOpenedMenus.containsKey(player.uniqueId)) {

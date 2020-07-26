@@ -19,7 +19,7 @@ import org.bukkit.entity.Player
 object EnchantCommand {
 
     @Command(
-        names = ["enchant", "ench", "cubed enchant"],
+        names = ["enchant", "ench", "source enchant"],
         permission = "essentials.enchant",
         description = "Enchant an item"
     )

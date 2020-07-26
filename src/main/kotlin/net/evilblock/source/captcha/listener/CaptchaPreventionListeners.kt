@@ -41,8 +41,10 @@ object CaptchaPreventionListeners : Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     fun onPlayerJoinEvent(event: PlayerJoinEvent) {
-        if (!event.player.isOp && !event.player.hasPermission(Permissions.CAPTCHA_BYPASS)) {
-            Tasks.delayed(1L) {
+        if (event.player.isOp || event.player.hasPermission(Permissions.CAPTCHA_BYPASS)) {
+            CaptchaHandler.completedCaptcha(event.player.uniqueId)
+        } else {
+            Tasks.delayed(10L) {
                 CaptchaMenu().openMenu(event.player)
             }
         }
