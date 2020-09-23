@@ -3,7 +3,7 @@ package net.evilblock.source
 import net.evilblock.cubed.Cubed
 import net.evilblock.cubed.CubedOptions
 import net.evilblock.cubed.command.CommandHandler
-import net.evilblock.cubed.command.def.BroadcastCommand
+import net.evilblock.source.server.command.BroadcastCommand
 import net.evilblock.pidgin.Pidgin
 import net.evilblock.pidgin.PidginOptions
 import net.evilblock.source.captcha.CaptchaHandler
@@ -12,14 +12,16 @@ import net.evilblock.source.chat.command.AntiSpamToggleCommand
 import net.evilblock.source.chat.command.ClearChatCommand
 import net.evilblock.source.chat.command.MuteChatCommand
 import net.evilblock.source.chat.command.SlowChatCommand
+import net.evilblock.source.chat.filter.ChatFilterHandler
 import net.evilblock.source.chat.filter.ChatFilterListeners
+import net.evilblock.source.chat.filter.command.ChatFilterEditorCommand
+import net.evilblock.source.chat.filter.command.ChatFilterImportDefaultsCommand
 import net.evilblock.source.chat.spam.ChatSpamListeners
 import net.evilblock.source.messaging.command.*
 import net.evilblock.source.messaging.listener.ChatIgnoreListeners
 import net.evilblock.source.server.prevention.DisallowedCommandsHandler
 import net.evilblock.source.server.announcement.AnnouncementHandler
 import net.evilblock.source.server.announcement.command.AnnouncementEditorCommand
-import net.evilblock.source.server.announcement.command.AnnouncementIntervalCommand
 import net.evilblock.source.server.command.*
 import net.evilblock.source.server.listener.ColoredSignListeners
 import net.evilblock.source.server.prevention.listener.DisallowedCommandsListeners
@@ -41,17 +43,23 @@ class Source : JavaPlugin() {
 
         Cubed.instance.configureOptions(CubedOptions(requireRedis = true))
 
-        pidgin = Pidgin("source", Cubed.instance.redis.jedisPool!!, PidginOptions(async = true))
+        pidgin = Pidgin("Source", Cubed.instance.redis.jedisPool!!, PidginOptions(async = true))
         pidgin.registerListener(AnnouncementHandler)
+        pidgin.registerListener(ChatFilterHandler)
         pidgin.registerListener(DisallowedCommandsHandler)
 
         AnnouncementHandler.initialLoad()
+        ChatFilterHandler.initialLoad()
         DisallowedCommandsHandler.initialLoad()
         CaptchaHandler.initialLoad()
 
+        CommandHandler.registerClass(ReloadCommand.javaClass)
+
         CommandHandler.registerClass(AnnouncementEditorCommand.javaClass)
-        CommandHandler.registerClass(AnnouncementIntervalCommand.javaClass)
         CommandHandler.registerClass(DisallowedCommandsEditorCommand.javaClass)
+
+        CommandHandler.registerClass(ChatFilterEditorCommand.javaClass)
+        CommandHandler.registerClass(ChatFilterImportDefaultsCommand.javaClass)
 
         CommandHandler.registerClass(AntiSpamToggleCommand.javaClass)
         CommandHandler.registerClass(ClearChatCommand.javaClass)
@@ -68,6 +76,7 @@ class Source : JavaPlugin() {
         CommandHandler.registerClass(ToggleMessagesCommand.javaClass)
         CommandHandler.registerClass(ToggleSoundsCommand.javaClass)
 
+        CommandHandler.registerClass(EditLoreCommand.javaClass)
         CommandHandler.registerClass(BroadcastCommand.javaClass)
         CommandHandler.registerClass(ClearCommand.javaClass)
         CommandHandler.registerClass(CraftCommand.javaClass)

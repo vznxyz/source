@@ -30,40 +30,40 @@ object ChatSpamListeners : Listener {
             return
         }
 
-        synchronized(chatHistory) {
-            while (chatHistory.size > 60) {
-                chatHistory.removeAt(0)
+        while (chatHistory.size > 60) {
+            chatHistory.removeAt(0)
+        }
+
+        var matchingRecords = 0
+        for (record in chatHistory) {
+            if (System.currentTimeMillis() >= record.time + 5_000L) {
+                continue
             }
 
-            var matchingRecords = 0
-            for (record in chatHistory) {
-                if (System.currentTimeMillis() >= record.time + 5_000L) {
-                    continue
-                }
-
-                val apply = JaroWrinkler.apply(record.message, event.message)
-                if (apply >= 0.80) {
-                    matchingRecords++
-                }
+            val apply = JaroWrinkler.apply(record.message, event.message)
+            if (apply >= 0.80) {
+                matchingRecords++
+            } else {
+                println(apply)
             }
+        }
 
-            chatHistory.add(ChatHistoryRecord(event.player.uniqueId, event.message))
+        chatHistory.add(ChatHistoryRecord(event.player.uniqueId, event.message))
 
-            if (matchingRecords > 3) {
-                event.recipients.clear()
-                event.recipients.add(event.player)
+        if (matchingRecords > 3) {
+            event.recipients.clear()
+            event.recipients.add(event.player)
 
-                val toSend = FancyMessage("[Anti-Spam] ")
-                    .color(ChatColor.RED)
-                    .style(ChatColor.BOLD)
-                    .tooltip("${ChatColor.YELLOW}This message was hidden from public chat.")
-                    .then(event.player.displayName)
-                    .then("${ChatColor.WHITE}: ${event.message}")
+            val toSend = FancyMessage("[Anti-Spam] ")
+                .color(ChatColor.RED)
+                .style(ChatColor.BOLD)
+                .tooltip("${ChatColor.YELLOW}This message was hidden from public chat.")
+                .then(event.player.displayName)
+                .then("${ChatColor.WHITE}: ${event.message}")
 
-                for (other in Bukkit.getOnlinePlayers()) {
-                    if (other.hasPermission(Permissions.ANTI_SPAM_VIEW)) {
-                        toSend.send(other)
-                    }
+            for (other in Bukkit.getOnlinePlayers()) {
+                if (other.hasPermission(Permissions.ANTI_SPAM_VIEW)) {
+                    toSend.send(other)
                 }
             }
         }

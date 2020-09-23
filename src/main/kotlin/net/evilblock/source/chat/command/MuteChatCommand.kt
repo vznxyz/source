@@ -10,9 +10,10 @@ import org.bukkit.command.CommandSender
 object MuteChatCommand {
 
     @Command(
-        names = ["mutechat", "source:mutechat"],
+        names = ["mutechat", "mute-chat", "source mute-chat"],
         description = "Mutes the chat",
-        permission = Permissions.MUTE_CHAT
+        permission = Permissions.MUTE_CHAT,
+        async = true
     )
     @JvmStatic
     fun execute(sender: CommandSender) {

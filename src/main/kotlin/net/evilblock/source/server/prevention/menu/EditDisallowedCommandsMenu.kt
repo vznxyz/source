@@ -8,7 +8,7 @@ import org.bukkit.entity.Player
 
 class EditDisallowedCommandsMenu : TextEditorMenu(lines = DisallowedCommandsHandler.disallowedCommands) {
 
-    override fun getPromptBuilder(player: Player): EzPrompt.Builder {
+    override fun getPromptBuilder(player: Player, index: Int): EzPrompt.Builder {
         return EzPrompt.Builder()
             .promptText("${ChatColor.GREEN}Please input the new disallowed command.")
     }
@@ -26,7 +26,7 @@ class EditDisallowedCommandsMenu : TextEditorMenu(lines = DisallowedCommandsHand
             }
         }.toMutableList()
 
-        DisallowedCommandsHandler.upload()
+        DisallowedCommandsHandler.saveToRedis()
     }
 
 }

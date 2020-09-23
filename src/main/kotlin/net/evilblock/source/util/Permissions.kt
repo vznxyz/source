@@ -2,6 +2,8 @@ package net.evilblock.source.util
 
 object Permissions {
 
+    const val RELOAD = "source.reload"
+
     const val FILTER_BYPASS = "source.chat.filter.bypass"
     const val FILTER_VIEW = "source.chat.filter.view"
 

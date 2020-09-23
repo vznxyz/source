@@ -15,17 +15,14 @@ import java.util.*
 
 object ChatFilterListeners : Listener {
 
-    private val badMessages: MutableMap<UUID, String> = Maps.newConcurrentMap()
+    private val badMessages: MutableMap<UUID, Pair<String, ChatFilter>> = Maps.newConcurrentMap()
 
     @EventHandler(priority = EventPriority.LOWEST)
     fun onPlayerChatLowest(event: AsyncPlayerChatEvent) {
         if (!event.player.hasPermission(Permissions.FILTER_BYPASS)) {
-            val message = event.message.toLowerCase()
-            for (filter in ChatFilter.bannedRegexes) {
-                if (filter.pattern.matcher(message).find()) {
-                    this.badMessages[event.player.uniqueId] = event.message
-                    break
-                }
+            val filter = ChatFilterHandler.filterMessage(event.message)
+            if (filter != null) {
+                badMessages[event.player.uniqueId] = Pair(event.message, filter)
             }
         }
     }
@@ -63,7 +60,10 @@ object ChatFilterListeners : Listener {
             val toSend = FancyMessage("[Filtered] ")
                 .color(ChatColor.RED)
                 .style(ChatColor.BOLD)
-                .tooltip("${ChatColor.YELLOW}This message was hidden from public chat.")
+                .formattedTooltip(listOf(
+                    FancyMessage("${ChatColor.YELLOW}This message was hidden from public chat."),
+                    FancyMessage("${ChatColor.RED}Filter: ${badMessages[player.uniqueId]!!.second.description}")
+                ))
                 .then(player.displayName)
                 .then("${ChatColor.WHITE}: ${event.message}")
 

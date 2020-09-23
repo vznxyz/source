@@ -12,9 +12,10 @@ import org.bukkit.command.CommandSender
 object SlowChatCommand {
 
     @Command(
-        names = ["slowchat", "source:slowchat"],
+        names = ["slowchat", "slow-chat", "source slow-chat"],
         description = "Slow the chat by putting users on cooldown",
-        permission = Permissions.SLOW_CHAT
+        permission = Permissions.SLOW_CHAT,
+        async = true
     )
     @JvmStatic
     fun execute(sender: CommandSender, @Param("duration", defaultValue = "0") duration: Int) {

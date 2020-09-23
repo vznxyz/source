@@ -15,10 +15,6 @@ object DisallowedCommandsHandler : MessageListener {
     internal var disallowedCommands: MutableList<String> = arrayListOf()
 
     fun initialLoad() {
-        fetch()
-    }
-
-    fun fetch() {
         Cubed.instance.redis.runRedisCommand { redis ->
             if (redis.exists(REDIS_KEY)) {
                 disallowedCommands = redis.lrange(REDIS_KEY, 0, -1)
@@ -28,7 +24,7 @@ object DisallowedCommandsHandler : MessageListener {
         }
     }
 
-    fun upload() {
+    fun saveToRedis() {
         Cubed.instance.redis.runRedisCommand { redis ->
             redis.del(REDIS_KEY)
 
@@ -42,7 +38,7 @@ object DisallowedCommandsHandler : MessageListener {
 
     @IncomingMessageHandler(id = MESSAGE_ID)
     fun onDisallowedCommandsUpdate(data: JsonObject) {
-        fetch()
+        initialLoad()
 
         Source.instance.systemLog("Update triggered, fetched ${disallowedCommands.size} disallowed commands")
     }

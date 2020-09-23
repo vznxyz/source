@@ -4,6 +4,7 @@ import net.evilblock.cubed.menu.Button
 import net.evilblock.cubed.menu.Menu
 import net.evilblock.cubed.util.bukkit.Tasks
 import net.evilblock.source.server.announcement.Announcement
+import net.evilblock.source.server.announcement.AnnouncementGroup
 import net.evilblock.source.server.announcement.AnnouncementHandler
 import org.bukkit.ChatColor
 import org.bukkit.Material
@@ -11,7 +12,11 @@ import org.bukkit.entity.Player
 import org.bukkit.event.inventory.ClickType
 import org.bukkit.inventory.InventoryView
 
-class EditAnnouncementMenu(private val announcement: Announcement) : Menu() {
+class EditAnnouncementMenu(private val group: AnnouncementGroup, private val announcement: Announcement) : Menu() {
+
+    init {
+        updateAfterClick = true
+    }
 
     override fun getTitle(player: Player): String {
         return "Edit Announcement"
@@ -29,7 +34,7 @@ class EditAnnouncementMenu(private val announcement: Announcement) : Menu() {
     override fun onClose(player: Player, manualClose: Boolean) {
         if (manualClose) {
             Tasks.delayed(1L) {
-                AnnouncementEditorMenu().openMenu(player)
+                GroupEditorMenu(group).openMenu(player)
             }
         }
     }
@@ -55,7 +60,7 @@ class EditAnnouncementMenu(private val announcement: Announcement) : Menu() {
 
         override fun clicked(player: Player, slot: Int, clickType: ClickType, view: InventoryView) {
             if (clickType.isLeftClick) {
-                EditAnnouncementLinesMenu(announcement).openMenu(player)
+                EditAnnouncementLinesMenu(group, announcement).openMenu(player)
             }
         }
     }
@@ -85,12 +90,25 @@ class EditAnnouncementMenu(private val announcement: Announcement) : Menu() {
 
         override fun clicked(player: Player, slot: Int, clickType: ClickType, view: InventoryView) {
             val mod = if (clickType.isShiftClick) 10 else 1
-            if (clickType.isLeftClick) {
-                announcement.order += mod
-                AnnouncementHandler.saveAnnouncement(announcement)
-            } else if (clickType.isRightClick) {
-                announcement.order = 0.coerceAtLeast(announcement.order - mod)
-                AnnouncementHandler.saveAnnouncement(announcement)
+
+            val update = when {
+                clickType.isLeftClick -> {
+                    announcement.order += mod
+                    true
+                }
+                clickType.isRightClick -> {
+                    announcement.order = 0.coerceAtLeast(announcement.order - mod)
+                    true
+                }
+                else -> {
+                    false
+                }
+            }
+
+            if (update) {
+                Tasks.async {
+                    AnnouncementHandler.saveGroup(group)
+                }
             }
         }
     }

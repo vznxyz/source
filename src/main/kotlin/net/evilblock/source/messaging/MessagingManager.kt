@@ -2,17 +2,26 @@ package net.evilblock.source.messaging
 
 import net.evilblock.cubed.Cubed
 import net.evilblock.cubed.util.bukkit.SoundCompat
+import net.evilblock.cubed.util.bukkit.Tasks
+import net.evilblock.source.Source
+import net.evilblock.source.chat.filter.ChatFilterHandler
 import net.evilblock.source.messaging.event.PlayerMessageEvent
 import net.evilblock.source.util.Permissions
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.entity.Player
+import org.bukkit.event.EventHandler
+import org.bukkit.event.Listener
+import org.bukkit.event.player.PlayerJoinEvent
+import org.bukkit.event.player.PlayerQuitEvent
 import java.util.*
 
-object MessagingManager {
+object MessagingManager : Listener {
 
     private const val REDIS_KEY = "Source:Messaging"
+
     val globalSpy: MutableSet<UUID> = hashSetOf()
+    val ignoreList: MutableMap<UUID, MutableSet<UUID>> = hashMapOf()
 
     /**
      * Gets the last messaged player for a player.
@@ -23,42 +32,34 @@ object MessagingManager {
      */
     fun getLastMessaged(player: UUID): UUID? {
         return Cubed.instance.redis.runRedisCommand { redis ->
-            redis.hget("$REDIS_KEY:$player", "lastMessaged")
+            redis.hget("$REDIS_KEY:$player", "LastMessaged")
         }?.run { UUID.fromString(this) }
     }
 
     /**
      * Sets the last messaged player for a player.
-     *
-     * @param player the player
      */
     fun setLastMessaged(player: UUID, lastMessaged: UUID) {
         Cubed.instance.redis.runRedisCommand { redis ->
-            redis.hset("$REDIS_KEY:$player", hashMapOf("lastMessaged" to "$lastMessaged"))
+            redis.hset("$REDIS_KEY:$player", hashMapOf("LastMessaged" to "$lastMessaged"))
         }
     }
 
     /**
-     * Gets if a player's messages are disabled.
-     *
-     * @param player the player
+     * Gets if a player's private messages are disabled.
      */
     fun isMessagesDisabled(player: UUID): Boolean {
         return Cubed.instance.redis.runRedisCommand { redis ->
-            redis.hget("$REDIS_KEY:$player", "messagesDisabled")
+            redis.hget("$REDIS_KEY:$player", "MessagesDisabled")
         }?.toBoolean() ?: false
     }
 
     /**
      * Toggles if a player's messages are disabled.
-     *
-     * @param player the player
-     *
-     * @return if the [player]'s messages are disabled after toggle
      */
     fun toggleMessages(player: UUID, value: Boolean): Boolean {
         Cubed.instance.redis.runRedisCommand { redis ->
-            redis.hmset("$REDIS_KEY:$player", hashMapOf("messagesDisabled" to value.toString()))
+            redis.hmset("$REDIS_KEY:$player", hashMapOf("MessagesDisabled" to value.toString()))
         }
 
         return value
@@ -66,86 +67,76 @@ object MessagingManager {
 
     /**
      * Gets if a player's message sounds are disabled.
-     *
-     * @param player the player
      */
     fun isSoundsDisabled(player: UUID): Boolean {
         return Cubed.instance.redis.runRedisCommand { redis ->
-            redis.hget("$REDIS_KEY:$player", "soundsDisabled")
+            redis.hget("$REDIS_KEY:$player", "SoundsDisabled")
         }?.toBoolean() ?: false
     }
 
     /**
      * Toggles if a player's message sounds are disabled.
-     *
-     * @param player the player
-     *
-     * @return if the [player]'s message sounds are disabled after toggle
      */
     fun toggleSounds(player: UUID, value: Boolean): Boolean {
         Cubed.instance.redis.runRedisCommand { redis ->
-            redis.hmset("$REDIS_KEY:$player", hashMapOf("soundsDisabled" to value.toString()))
+            redis.hmset("$REDIS_KEY:$player", hashMapOf("SoundsDisabled" to value.toString()))
         }
 
         return value
     }
 
     /**
+     * Retrieves a player's ignore list.
+     */
+    fun getIgnoreList(player: UUID): Set<UUID> {
+        return Cubed.instance.redis.runRedisCommand { redis ->
+            if (redis.exists("$REDIS_KEY:IgnoreList:$player")) {
+                redis.smembers("$REDIS_KEY:IgnoreList:$player").map { UUID.fromString(it) }.toSet()
+            } else {
+                emptySet()
+            }
+        }
+    }
+
+    /**
      * Gets whether or not the [player] is ignored by the [target].
-     *
-     * @param player the player
-     * @param target the target
-     *
-     * @return if the [player] is ignored by the [target]
      */
     fun isIgnored(player: UUID, target: UUID): Boolean {
-        return Cubed.instance.redis.runRedisCommand { redis ->
-            redis.hget("$REDIS_KEY:ignoreList:$player", "$target")
-        }?.toBoolean() == true
+        return getIgnoreList(player).contains(target)
     }
 
     /**
      * Adds a target to a player's ignore list.
      */
     fun addToIgnoreList(player: UUID, target: UUID) {
+        if (ignoreList.containsKey(player)) {
+            ignoreList[player]?.add(target)
+        }
+
         Cubed.instance.redis.runRedisCommand { redis ->
-            redis.hmset("$REDIS_KEY:ignoreList:$player", hashMapOf(target.toString() to "true"))
+            redis.sadd("$REDIS_KEY:IgnoreList:$player", target.toString())
         }
     }
 
     /**
      * Removes a target from a player's ignore list.
-     *
-     * @param player the player's UUID
-     * @param target the target's UUID
      */
     fun removeFromIgnoreList(player: UUID, target: UUID) {
+        if (ignoreList.containsKey(player)) {
+            ignoreList[player]?.remove(target)
+        }
+
         Cubed.instance.redis.runRedisCommand { redis ->
-            redis.hdel("$REDIS_KEY:ignoreList:$player", target.toString())
+            redis.srem("$REDIS_KEY:IgnoreList:$player", target.toString())
         }
     }
 
     /**
      * Clears a player's ignore list.
-     *
-     * @param player the player's UUID
      */
     fun clearIgnoreList(player: UUID) {
         Cubed.instance.redis.runRedisCommand { redis ->
-            redis.del("$REDIS_KEY:ignoreList:$player")
-        }
-    }
-
-    /**
-     * Retrieves a player's ignore list.
-     *
-     * @param player the player's UUID
-     *
-     * @return the player's ignore list as {@link List<UUID>}
-     */
-    fun getIgnoreList(player: UUID): List<UUID> {
-        return Cubed.instance.redis.runRedisCommand { redis ->
-            redis.hgetAll("$REDIS_KEY:ignoreList:$player").map { entry -> UUID.fromString(entry.key) }
+            redis.del("$REDIS_KEY:IgnoreList:$player")
         }
     }
 
@@ -168,21 +159,21 @@ object MessagingManager {
         }
 
         if (isIgnored(sender.uniqueId, target.uniqueId)) {
-            sender.sendMessage(ChatColor.RED.toString() + "That player is ignoring you.")
+            sender.sendMessage("${ChatColor.RED}That player is ignoring you.")
             return false
         }
 
         if (isIgnored(target.uniqueId, sender.uniqueId)) {
-            sender.sendMessage(ChatColor.RED.toString() + "You are ignoring that player.")
+            sender.sendMessage("${ChatColor.RED}You are ignoring that player.")
             return false
         }
 
         if (isMessagesDisabled(sender.uniqueId)) {
-            sender.sendMessage(ChatColor.RED.toString() + "You have messages turned off.")
+            sender.sendMessage("${ChatColor.RED}You have messages turned off.")
         }
 
         if (isMessagesDisabled(target.uniqueId)) {
-            sender.sendMessage(target.displayName + ChatColor.RED + " has messages turned off.")
+            sender.sendMessage(target.displayName + "${ChatColor.RED} has messages turned off.")
             return false
         }
 
@@ -204,11 +195,37 @@ object MessagingManager {
             return
         }
 
+        val senderName = if (useMetadataAdapter()) {
+            if (sender.hasMetadata(getMetadataAdapterKey())) {
+                sender.getMetadata(getMetadataAdapterKey())[0].asString() + sender.displayName
+            } else {
+                sender.playerListName
+            }
+        } else {
+            sender.playerListName
+        }
+
+        val targetName = if (useMetadataAdapter()) {
+            if (target.hasMetadata(getMetadataAdapterKey())) {
+                target.getMetadata(getMetadataAdapterKey())[0].asString() + target.displayName
+            } else {
+                target.playerListName
+            }
+        } else {
+            target.playerListName
+        }
+
+        val flaggedFilter = ChatFilterHandler.filterMessage(message)
+        if (flaggedFilter != null) {
+            sender.sendMessage("${ChatColor.GRAY}(To ${ChatColor.RESET}$targetName${ChatColor.GRAY}) $message")
+            return
+        }
+
         setLastMessaged(sender.uniqueId, target.uniqueId)
         setLastMessaged(target.uniqueId, sender.uniqueId)
 
-        target.sendMessage("${ChatColor.GRAY}(From ${ChatColor.WHITE}${sender.displayName}${ChatColor.GRAY}) " + message)
-        sender.sendMessage("${ChatColor.GRAY}(To ${ChatColor.WHITE}${target.displayName}${ChatColor.GRAY}) " + message)
+        target.sendMessage("${ChatColor.GRAY}(From ${ChatColor.RESET}$senderName${ChatColor.GRAY}) $message")
+        sender.sendMessage("${ChatColor.GRAY}(To ${ChatColor.RESET}$targetName${ChatColor.GRAY}) $message")
 
         if (!isSoundsDisabled(target.uniqueId)) {
             SoundCompat.MESSAGE_RECEIVED.playSound(target)
@@ -221,10 +238,30 @@ object MessagingManager {
                 }
 
                 if (globalSpy.contains(player.uniqueId)) {
-                    player.sendMessage(ChatColor.GRAY.toString() + "(" + ChatColor.WHITE + sender.displayName + ChatColor.GRAY + " to " + ChatColor.WHITE + target.displayName + ChatColor.GRAY + ") " + message)
+                    player.sendMessage("${ChatColor.GRAY}(${ChatColor.RESET}$senderName ${ChatColor.GRAY}to $targetName${ChatColor.GRAY}) " + message)
                 }
             }
         }
+    }
+
+    fun useMetadataAdapter(): Boolean {
+        return Source.instance.config.getBoolean("messaging.use-metadata-adapter", true)
+    }
+
+    fun getMetadataAdapterKey(): String {
+        return Source.instance.config.getString("messaging.metadata-adapter-key", "EP_PLAYER_LIST_NAME")
+    }
+
+    @EventHandler
+    fun onPlayerJoinEvent(event: PlayerJoinEvent) {
+        Tasks.async {
+            ignoreList[event.player.uniqueId] = getIgnoreList(event.player.uniqueId).toMutableSet()
+        }
+    }
+
+    @EventHandler
+    fun onPlayerQuitEvent(event: PlayerQuitEvent) {
+        ignoreList.remove(event.player.uniqueId)
     }
 
 }

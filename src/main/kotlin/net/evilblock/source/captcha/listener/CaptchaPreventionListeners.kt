@@ -8,6 +8,7 @@
 package net.evilblock.source.captcha.listener
 
 import net.evilblock.cubed.util.bukkit.Tasks
+import net.evilblock.source.Source
 import net.evilblock.source.captcha.CaptchaHandler
 import net.evilblock.source.captcha.menu.CaptchaMenu
 import net.evilblock.source.util.Permissions
@@ -19,6 +20,8 @@ import org.bukkit.event.player.AsyncPlayerChatEvent
 import org.bukkit.event.player.PlayerCommandPreprocessEvent
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
+import org.bukkit.metadata.FixedMetadataValue
+import java.util.concurrent.TimeUnit
 
 object CaptchaPreventionListeners : Listener {
 
@@ -41,10 +44,12 @@ object CaptchaPreventionListeners : Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     fun onPlayerJoinEvent(event: PlayerJoinEvent) {
-        if (event.player.isOp || event.player.hasPermission(Permissions.CAPTCHA_BYPASS)) {
-            CaptchaHandler.completedCaptcha(event.player.uniqueId)
-        } else {
-            Tasks.delayed(10L) {
+        CaptchaHandler.applyGracePeriod(event.player)
+
+        Tasks.delayed(10L) {
+            if (event.player.isOp || event.player.hasPermission(Permissions.CAPTCHA_BYPASS)) {
+                CaptchaHandler.completedCaptcha(event.player.uniqueId)
+            } else {
                 CaptchaMenu().openMenu(event.player)
             }
         }
@@ -52,6 +57,7 @@ object CaptchaPreventionListeners : Listener {
 
     @EventHandler
     fun onPlayerQuitEvent(event: PlayerQuitEvent) {
+        CaptchaHandler.removeGracePeriod(event.player)
         CaptchaHandler.forgetPlayer(event.player.uniqueId)
     }
 

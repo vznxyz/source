@@ -1,0 +1,7 @@
+announcements:
+  active-group: "Hub"
+messaging:
+  # If the plugin should try fetching a player's color from their metadata
+  use-metadata-adapter: true
+  # The name of the metadata key
+  metadata-adapter-key: "EP_PLAYER_LIST_NAME"

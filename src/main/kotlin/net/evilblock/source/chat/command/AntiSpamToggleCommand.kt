@@ -9,7 +9,7 @@ import org.bukkit.command.CommandSender
 object AntiSpamToggleCommand {
 
     @Command(
-        names = ["anti-spam toggle"],
+        names = ["source anti-spam"],
         description = "Toggle the anti-spam system",
         permission = Permissions.ANTI_SPAM_TOGGLE,
         async = true
@@ -19,9 +19,9 @@ object AntiSpamToggleCommand {
         ChatSpamListeners.SPAM_PREVENTION_ENABLED = !ChatSpamListeners.SPAM_PREVENTION_ENABLED
 
         if (ChatSpamListeners.SPAM_PREVENTION_ENABLED) {
-            sender.sendMessage("${ChatColor.GREEN}Enabled chat anti-spam")
+            sender.sendMessage("${ChatColor.GREEN}Enabled chat anti-spam!")
         } else {
-            sender.sendMessage("${ChatColor.RED}Disabled chat anti-spam.")
+            sender.sendMessage("${ChatColor.RED}Disabled chat anti-spam!")
         }
     }
 

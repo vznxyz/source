@@ -2,14 +2,16 @@ package net.evilblock.source.server.announcement.menu
 
 import net.evilblock.cubed.menu.Button
 import net.evilblock.cubed.menu.buttons.AddButton
+import net.evilblock.cubed.menu.buttons.GlassButton
 import net.evilblock.cubed.menu.menus.ConfirmMenu
 import net.evilblock.cubed.menu.pagination.PaginatedMenu
 import net.evilblock.cubed.util.TextSplitter
+import net.evilblock.cubed.util.TextUtil
+import net.evilblock.cubed.util.bukkit.Tasks
 import net.evilblock.cubed.util.bukkit.prompt.EzPrompt
-import net.evilblock.source.server.announcement.Announcement
+import net.evilblock.source.server.announcement.AnnouncementGroup
 import net.evilblock.source.server.announcement.AnnouncementHandler
 import org.bukkit.ChatColor
-import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.event.inventory.ClickType
 import org.bukkit.inventory.InventoryView
@@ -20,52 +22,52 @@ class AnnouncementEditorMenu : PaginatedMenu() {
         return "Announcements Editor"
     }
 
-    override fun getGlobalButtons(player: Player): Map<Int, Button>? {
-        val buttons = hashMapOf<Int, Button>()
-
-        buttons[2] = AddAnnouncementButton()
-
-        for (i in 9..17) {
-            buttons[i] = Button.placeholder(Material.STAINED_GLASS_PANE, 0, " ")
-        }
-
-        return buttons
-    }
-
     override fun getAllPagesButtons(player: Player): Map<Int, Button> {
         val buttons = hashMapOf<Int, Button>()
 
-        for (announcement in AnnouncementHandler.announcements) {
-            buttons[buttons.size] = AnnouncementButton(announcement)
+        for (group in AnnouncementHandler.getGroups()) {
+            buttons[buttons.size] = GroupButton(group)
         }
 
         return buttons
     }
 
-    override fun size(buttons: Map<Int, Button>): Int {
-        return 54
-    }
+    override fun getGlobalButtons(player: Player): Map<Int, Button>? {
+        val buttons = hashMapOf<Int, Button>()
 
-    override fun getMaxItemsPerPage(player: Player): Int {
-        return 36
+        buttons[0] = AddGroupButton()
+
+        for (i in 9 until 17) {
+            buttons[i] = GlassButton(0)
+        }
+
+        return buttons
     }
 
     override fun getButtonsStartOffset(): Int {
         return 9
     }
 
-    private inner class AddAnnouncementButton : AddButton() {
+    override fun getMaxItemsPerPage(player: Player): Int {
+        return 36
+    }
+
+    override fun size(buttons: Map<Int, Button>): Int {
+        return 45
+    }
+
+    private inner class AddGroupButton : AddButton() {
         override fun getName(player: Player): String {
-            return "${ChatColor.AQUA}${ChatColor.BOLD}Create New Announcement"
+            return "${ChatColor.AQUA}${ChatColor.BOLD}Create New Announcement Group"
         }
 
         override fun getDescription(player: Player): List<String> {
             val description = arrayListOf<String>()
 
             description.add("")
-            description.addAll(TextSplitter.split(length = 40, text = "Create a new announcement by following the setup procedure.", linePrefix = "${ChatColor.GRAY}"))
+            description.addAll(TextSplitter.split(text = "Create a new announcement group by following the setup procedure.", linePrefix = "${ChatColor.GRAY}"))
             description.add("")
-            description.add("${ChatColor.GREEN}${ChatColor.BOLD}LEFT-CLICK ${ChatColor.GREEN}to create a new announcement")
+            description.add("${ChatColor.GREEN}${ChatColor.BOLD}LEFT-CLICK ${ChatColor.GREEN}to create a new chat filter")
 
             return description
         }
@@ -73,16 +75,22 @@ class AnnouncementEditorMenu : PaginatedMenu() {
         override fun clicked(player: Player, slot: Int, clickType: ClickType, view: InventoryView) {
             if (clickType.isLeftClick) {
                 EzPrompt.Builder()
-                    .promptText("${ChatColor.GREEN}Please input the new announcement.")
-                    .acceptInput { player, input ->
-                        val announcement = Announcement(lines = arrayListOf(input))
+                    .regex(EzPrompt.IDENTIFIER_REGEX)
+                    .charLimit(16)
+                    .promptText("${ChatColor.GREEN}Please input an ID for the announcement group.")
+                    .acceptInput { _, input ->
+                        if (AnnouncementHandler.getGroupById(input) != null) {
+                            player.sendMessage("${ChatColor.RED}That ID is already taken!")
+                            return@acceptInput
+                        }
 
-                        AnnouncementHandler.announcements.add(announcement)
-                        AnnouncementHandler.saveAnnouncement(announcement)
+                        val group = AnnouncementGroup(input)
 
-                        player.sendMessage("${ChatColor.GREEN}Successfully created a new announcement.")
+                        Tasks.async {
+                            AnnouncementHandler.saveGroup(group)
+                        }
 
-                        EditAnnouncementMenu(announcement).openMenu(player)
+                        GroupEditorMenu(group).openMenu(player)
                     }
                     .build()
                     .start(player)
@@ -90,43 +98,49 @@ class AnnouncementEditorMenu : PaginatedMenu() {
         }
     }
 
-    private inner class AnnouncementButton(private val announcement: Announcement) : Button() {
+    private inner class GroupButton(private val group: AnnouncementGroup) : Button() {
         override fun getName(player: Player): String {
-            return "${ChatColor.YELLOW}${ChatColor.BOLD}Announcement #${announcement.order}"
+            return if (AnnouncementHandler.getActiveGroup() == group) {
+                "${ChatColor.GREEN}${ChatColor.BOLD}${group.id}"
+            } else {
+                "${ChatColor.RED}${ChatColor.BOLD}${group.id}"
+            }
         }
 
         override fun getDescription(player: Player): List<String> {
             val description = arrayListOf<String>()
-            description.add("")
 
-            for (line in announcement.lines) {
-                description.add(ChatColor.translateAlternateColorCodes('&', line))
+            description.add("${ChatColor.GRAY}Announcements: ${ChatColor.YELLOW}${group.announcements.size}")
+            description.add("${ChatColor.GRAY}Interval: ${ChatColor.YELLOW}${group.interval} ${TextUtil.pluralize(group.interval, "second", "seconds")}")
+            description.add("")
+            description.add("${ChatColor.GREEN}${ChatColor.BOLD}LEFT-CLICK ${ChatColor.GREEN}to edit group")
+
+            if (AnnouncementHandler.getActiveGroup() == group) {
+                description.add("${ChatColor.RED}${ChatColor.BOLD}RIGHT-CLICK ${ChatColor.RED}to make group inactive")
+            } else {
+                description.add("${ChatColor.AQUA}${ChatColor.BOLD}MIDDLE-CLICK ${ChatColor.AQUA}to make group active")
+                description.add("${ChatColor.RED}${ChatColor.BOLD}RIGHT-CLICK ${ChatColor.RED}to delete group")
             }
-
-            description.add("")
-            description.add("${ChatColor.GREEN}${ChatColor.BOLD}LEFT-CLICK ${ChatColor.GREEN}to edit this announcement")
-            description.add("${ChatColor.RED}${ChatColor.BOLD}RIGHT-CLICK ${ChatColor.RED}to delete this announcement")
 
             return description
         }
 
-        override fun getMaterial(player: Player): Material {
-            return Material.PAPER
-        }
-
         override fun clicked(player: Player, slot: Int, clickType: ClickType, view: InventoryView) {
             if (clickType.isLeftClick) {
-                EditAnnouncementMenu(announcement).openMenu(player)
+                GroupEditorMenu(group).openMenu(player)
             } else if (clickType.isRightClick) {
-                ConfirmMenu("Are you sure?") { confirmed ->
-                    if (confirmed) {
-                        AnnouncementHandler.announcements.remove(announcement)
-                        AnnouncementHandler.deleteAnnouncement(announcement)
-                    } else {
-                        player.sendMessage("${ChatColor.YELLOW}No changes made.")
-                    }
-
-                    this@AnnouncementEditorMenu.openMenu(player)
+                if (AnnouncementHandler.getActiveGroup() == group) {
+                    AnnouncementHandler.setActiveGroup(null)
+                } else {
+                    ConfirmMenu { confirmed ->
+                        if (confirmed) {
+                            AnnouncementHandler.deleteGroup(group)
+                        }
+                    }.openMenu(player)
+                }
+            } else if (clickType == ClickType.MIDDLE) {
+                if (AnnouncementHandler.getActiveGroup() != group) {
+                    AnnouncementHandler.setActiveGroup(group)
                 }
             }
         }
