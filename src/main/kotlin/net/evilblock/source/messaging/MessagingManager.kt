@@ -197,7 +197,7 @@ object MessagingManager : Listener {
 
         val senderName = if (useMetadataAdapter()) {
             if (sender.hasMetadata(getMetadataAdapterKey())) {
-                sender.getMetadata(getMetadataAdapterKey())[0].asString() + sender.displayName
+                ChatColor.translateAlternateColorCodes('&', sender.getMetadata(getMetadataAdapterKey())[0].asString()) + sender.displayName
             } else {
                 sender.playerListName
             }
@@ -207,7 +207,7 @@ object MessagingManager : Listener {
 
         val targetName = if (useMetadataAdapter()) {
             if (target.hasMetadata(getMetadataAdapterKey())) {
-                target.getMetadata(getMetadataAdapterKey())[0].asString() + target.displayName
+                ChatColor.translateAlternateColorCodes('&', target.getMetadata(getMetadataAdapterKey())[0].asString()) + target.displayName
             } else {
                 target.playerListName
             }
