@@ -1,6 +1,7 @@
 package net.evilblock.source.server.announcement.menu
 
 import net.evilblock.cubed.menu.menus.TextEditorMenu
+import net.evilblock.cubed.util.TextUtil
 import net.evilblock.cubed.util.bukkit.Tasks
 import net.evilblock.cubed.util.bukkit.prompt.EzPrompt
 import net.evilblock.source.server.announcement.Announcement
@@ -23,7 +24,13 @@ class EditAnnouncementLinesMenu(private val group: AnnouncementGroup, private va
     }
 
     override fun onSave(player: Player, list: List<String>) {
-        announcement.lines = lines.toMutableList()
+        announcement.lines = list.map { line ->
+            if (TextUtil.isBlank(text = line)) {
+                ""
+            } else {
+                line
+            }
+        }.toMutableList()
 
         Tasks.async {
             AnnouncementHandler.saveGroup(group)

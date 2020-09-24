@@ -11,6 +11,7 @@ import net.evilblock.cubed.util.bukkit.prompt.NumberPrompt
 import net.evilblock.source.server.announcement.Announcement
 import net.evilblock.source.server.announcement.AnnouncementGroup
 import net.evilblock.source.server.announcement.AnnouncementHandler
+import org.apache.commons.lang.StringUtils
 import org.bukkit.ChatColor
 import org.bukkit.Material
 import org.bukkit.entity.Player
@@ -154,11 +155,13 @@ class GroupEditorMenu(private val group: AnnouncementGroup) : PaginatedMenu() {
         override fun getDescription(player: Player): List<String> {
             val description = arrayListOf<String>()
             description.add("")
+            description.add("${ChatColor.GRAY}${ChatColor.STRIKETHROUGH}${StringUtils.repeat("-", 28)}")
 
             for (line in announcement.lines) {
                 description.add(ChatColor.translateAlternateColorCodes('&', line))
             }
 
+            description.add("${ChatColor.GRAY}${ChatColor.STRIKETHROUGH}${StringUtils.repeat("-", 28)}")
             description.add("")
             description.add("${ChatColor.GREEN}${ChatColor.BOLD}LEFT-CLICK ${ChatColor.GREEN}to edit this announcement")
             description.add("${ChatColor.RED}${ChatColor.BOLD}RIGHT-CLICK ${ChatColor.RED}to delete this announcement")
