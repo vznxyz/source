@@ -12,6 +12,7 @@ import net.evilblock.cubed.util.bukkit.prompt.EzPrompt
 import net.evilblock.source.server.announcement.AnnouncementGroup
 import net.evilblock.source.server.announcement.AnnouncementHandler
 import org.bukkit.ChatColor
+import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.event.inventory.ClickType
 import org.bukkit.inventory.InventoryView
@@ -35,9 +36,9 @@ class AnnouncementEditorMenu : PaginatedMenu() {
     override fun getGlobalButtons(player: Player): Map<Int, Button>? {
         val buttons = hashMapOf<Int, Button>()
 
-        buttons[0] = AddGroupButton()
+        buttons[2] = AddGroupButton()
 
-        for (i in 9 until 17) {
+        for (i in 9..17) {
             buttons[i] = GlassButton(0)
         }
 
@@ -118,11 +119,15 @@ class AnnouncementEditorMenu : PaginatedMenu() {
             if (AnnouncementHandler.getActiveGroup() == group) {
                 description.add("${ChatColor.RED}${ChatColor.BOLD}RIGHT-CLICK ${ChatColor.RED}to make group inactive")
             } else {
-                description.add("${ChatColor.AQUA}${ChatColor.BOLD}MIDDLE-CLICK ${ChatColor.AQUA}to make group active")
+                description.add("${ChatColor.YELLOW}${ChatColor.BOLD}MIDDLE-CLICK ${ChatColor.YELLOW}to make group active")
                 description.add("${ChatColor.RED}${ChatColor.BOLD}RIGHT-CLICK ${ChatColor.RED}to delete group")
             }
 
             return description
+        }
+
+        override fun getMaterial(player: Player): Material {
+            return Material.BOOKSHELF
         }
 
         override fun clicked(player: Player, slot: Int, clickType: ClickType, view: InventoryView) {
