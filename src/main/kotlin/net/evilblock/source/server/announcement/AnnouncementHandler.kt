@@ -3,6 +3,7 @@ package net.evilblock.source.server.announcement
 import com.google.gson.JsonObject
 import com.google.gson.reflect.TypeToken
 import com.mongodb.client.MongoCollection
+import com.mongodb.client.model.ReplaceOptions
 import net.evilblock.cubed.Cubed
 import net.evilblock.cubed.util.bukkit.Tasks
 import net.evilblock.pidgin.message.Message
@@ -10,12 +11,16 @@ import net.evilblock.pidgin.message.handler.IncomingMessageHandler
 import net.evilblock.pidgin.message.listener.MessageListener
 import net.evilblock.source.Source
 import org.bson.Document
+import org.bson.json.JsonMode
+import org.bson.json.JsonWriterSettings
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.scheduler.BukkitTask
 import java.util.concurrent.atomic.AtomicInteger
 
 object AnnouncementHandler : MessageListener {
+
+    private val JSON_WRITER_SETTINGS = JsonWriterSettings.builder().outputMode(JsonMode.RELAXED).build()
 
     private lateinit var mongoCollection: MongoCollection<Document>
 
@@ -32,7 +37,9 @@ object AnnouncementHandler : MessageListener {
 
         activeGroup = getGroupById(Source.instance.config.getString("announcements.active-group", "Hub"))
 
-        startTask()
+        if (activeGroup != null) {
+            startTask()
+        }
     }
 
     fun getGroups(): List<AnnouncementGroup> {
@@ -53,14 +60,22 @@ object AnnouncementHandler : MessageListener {
     }
 
     fun setActiveGroup(group: AnnouncementGroup?) {
+        if (task != null && !task!!.isCancelled) {
+            task!!.cancel()
+        }
+
         activeGroup = group
+
+        if (activeGroup != null) {
+            startTask()
+        }
 
         Source.instance.config.set("announcements.active-group", group?.id)
         Source.instance.saveConfig()
     }
 
     private fun deserializeDocument(document: Document): AnnouncementGroup {
-        return Cubed.gson.fromJson(document.toString(), object : TypeToken<AnnouncementGroup>() {}.type)
+        return Cubed.gson.fromJson(document.toJson(JSON_WRITER_SETTINGS), object : TypeToken<AnnouncementGroup>() {}.type)
     }
 
     fun fetchGroups() {
@@ -75,7 +90,7 @@ object AnnouncementHandler : MessageListener {
     }
 
     fun fetchGroup(id: String): AnnouncementGroup? {
-        val document = mongoCollection.find(Document("_id", id)).first() ?: return null
+        val document = mongoCollection.find(Document("id", id)).first() ?: return null
         return deserializeDocument(document)
     }
 
@@ -84,13 +99,13 @@ object AnnouncementHandler : MessageListener {
             groups.add(group)
         }
 
-        mongoCollection.replaceOne(Document("_id", group.id), Document.parse(Cubed.gson.toJson(group)))
+        mongoCollection.replaceOne(Document("id", group.id), Document.parse(Cubed.gson.toJson(group)), ReplaceOptions().upsert(true))
         Source.instance.pidgin.sendMessage(Message(id = "Announcement", data = mapOf("ID" to group.id, "Action" to "UPDATE")))
     }
 
     fun deleteGroup(group: AnnouncementGroup) {
         groups.remove(group)
-        mongoCollection.deleteOne(Document("_id", group.id))
+        mongoCollection.deleteOne(Document("id", group.id))
         Source.instance.pidgin.sendMessage(Message(id = "Announcement", data = mapOf("ID" to group.id, "Action" to "DELETE")))
     }
 
@@ -101,7 +116,7 @@ object AnnouncementHandler : MessageListener {
 
         val activeGroup = activeGroup!!
 
-        if (task != null) {
+        if (task != null && !task!!.isCancelled) {
             task!!.cancel()
         }
 
@@ -125,9 +140,8 @@ object AnnouncementHandler : MessageListener {
     @IncomingMessageHandler(id = "Announcement")
     fun onAnnouncementsUpdate(data: JsonObject) {
         val id = data["ID"].asString
-        val action = data["Action"].asString
 
-        when (action) {
+        when (data["Action"].asString) {
             "UPDATE" -> {
                 val freshGroup = fetchGroup(id)
                 if (freshGroup != null) {
@@ -135,9 +149,18 @@ object AnnouncementHandler : MessageListener {
                     if (existingGroup != null) {
                         existingGroup.announcements = freshGroup.announcements
                         existingGroup.interval = freshGroup.interval
+
+                        // interval might have changed, lets restart the task
+                        if (activeGroup == existingGroup) {
+                            startTask()
+                        }
                     } else {
                         groups.add(freshGroup)
                     }
+
+                    Source.instance.systemLog("Update triggered for $id announcement group")
+                } else {
+                    Source.instance.systemLog("${ChatColor.RED}Update triggered for $id announcement group, but couldn't fetch updates")
                 }
             }
             "DELETE" -> {
@@ -149,10 +172,10 @@ object AnnouncementHandler : MessageListener {
                         activeGroup = null
                     }
                 }
+
+                Source.instance.systemLog("Delete triggered for $id announcement group")
             }
         }
-
-        Source.instance.systemLog("$action triggered for $id announcement group")
     }
 
 }
