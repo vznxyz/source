@@ -79,6 +79,7 @@ class Source : JavaPlugin() {
         CommandHandler.registerClass(EditLoreCommand.javaClass)
         CommandHandler.registerClass(BroadcastCommand.javaClass)
         CommandHandler.registerClass(ClearCommand.javaClass)
+        CommandHandler.registerClass(ColorsCommand.javaClass)
         CommandHandler.registerClass(CraftCommand.javaClass)
         CommandHandler.registerClass(EnchantCommand.javaClass)
         CommandHandler.registerClass(GamemodeCommands.javaClass)
