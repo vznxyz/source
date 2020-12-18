@@ -1,8 +1,11 @@
-package net.evilblock.source.chat.filter
+package net.evilblock.source.chat.filter.listener
 
 import com.google.common.collect.Maps
 import mkremins.fanciful.FancyMessage
 import net.evilblock.source.chat.ChatSettings
+import net.evilblock.source.chat.filter.ChatFilter
+import net.evilblock.source.chat.filter.ChatFilterHandler
+import net.evilblock.source.chat.filter.event.ChatMessageFilteredEvent
 import net.evilblock.source.util.Permissions
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
@@ -23,6 +26,15 @@ object ChatFilterListeners : Listener {
             val filter = ChatFilterHandler.filterMessage(event.message)
             if (filter != null) {
                 badMessages[event.player.uniqueId] = Pair(event.message, filter)
+
+                val filterEvent = ChatMessageFilteredEvent(event.player, event.message)
+                filterEvent.call()
+
+                if (filterEvent.isCancelled) {
+                    event.isCancelled = true
+                } else {
+                    event.message = filterEvent.message
+                }
             }
         }
     }

@@ -1,10 +1,12 @@
 package net.evilblock.source.messaging
 
+import mkremins.fanciful.FancyMessage
 import net.evilblock.cubed.Cubed
 import net.evilblock.cubed.util.bukkit.SoundCompat
 import net.evilblock.cubed.util.bukkit.Tasks
 import net.evilblock.source.Source
 import net.evilblock.source.chat.filter.ChatFilterHandler
+import net.evilblock.source.chat.filter.event.PrivateMessageFilteredEvent
 import net.evilblock.source.messaging.event.PlayerMessageEvent
 import net.evilblock.source.util.Permissions
 import org.bukkit.Bukkit
@@ -215,9 +217,30 @@ object MessagingManager : Listener {
             target.playerListName
         }
 
-        val flaggedFilter = ChatFilterHandler.filterMessage(message)
-        if (flaggedFilter != null) {
+        val filter = ChatFilterHandler.filterMessage(message)
+        if (filter != null) {
+            val filterEvent = PrivateMessageFilteredEvent(sender, target, event.message)
+            filterEvent.call()
+
+            if (filterEvent.isCancelled) {
+                event.isCancelled = true
+                return
+            }
+
             sender.sendMessage("${ChatColor.GRAY}(To ${ChatColor.RESET}$targetName${ChatColor.GRAY}) $message")
+
+            val filterAlert = FancyMessage("[Filtered] ${ChatColor.GRAY}(${ChatColor.RESET}$senderName ${ChatColor.GRAY}to $targetName${ChatColor.GRAY}) ${event.message}")
+                .formattedTooltip(listOf(
+                    FancyMessage("${ChatColor.YELLOW}This message was hidden from public chat."),
+                    FancyMessage("${ChatColor.RED}Filter: ${filter.description}")
+                ))
+
+            for (player in Bukkit.getOnlinePlayers()) {
+                if (player !== sender && player !== target && globalSpy.contains(player.uniqueId)) {
+                    filterAlert.send(player)
+                }
+            }
+
             return
         }
 
@@ -232,14 +255,8 @@ object MessagingManager : Listener {
         }
 
         for (player in Bukkit.getOnlinePlayers()) {
-            if (player !== sender) {
-                if (player === target) {
-                    continue
-                }
-
-                if (globalSpy.contains(player.uniqueId)) {
-                    player.sendMessage("${ChatColor.GRAY}(${ChatColor.RESET}$senderName ${ChatColor.GRAY}to $targetName${ChatColor.GRAY}) " + message)
-                }
+            if (player !== sender && player !== target && globalSpy.contains(player.uniqueId)) {
+                player.sendMessage("${ChatColor.GRAY}(${ChatColor.RESET}$senderName ${ChatColor.GRAY}to $targetName${ChatColor.GRAY}) " + message)
             }
         }
     }

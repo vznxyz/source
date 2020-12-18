@@ -18,7 +18,7 @@ object ChatFilterImportDefaultsCommand {
     @JvmStatic
     fun execute(sender: CommandSender) {
         if (sender !is ConsoleCommandSender) {
-            sender.sendMessage("${ChatColor.RED}This command must be executed through console.")
+            sender.sendMessage("${ChatColor.RED}That command must be executed through console.")
             return
         }
 

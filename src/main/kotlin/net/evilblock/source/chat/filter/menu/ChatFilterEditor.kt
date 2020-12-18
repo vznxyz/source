@@ -153,7 +153,7 @@ class ChatFilterEditor : PaginatedMenu() {
                     }
 
                     this@ChatFilterEditor.openMenu(player)
-                }
+                }.openMenu(player)
             }
         }
     }

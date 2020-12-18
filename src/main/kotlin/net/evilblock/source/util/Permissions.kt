@@ -28,6 +28,8 @@ object Permissions {
     const val LOG_VIEW = "source.logs"
 
     const val ANNOUNCEMENT_EDITOR = "source.announcement.editor"
+
     const val DISALLOWED_COMMANDS_EDITOR = "source.disallowed-cmds.editor"
+    const val DISALLOWED_COMMANDS_BYPASS = "source.disallowed-cmds.bypass"
 
 }

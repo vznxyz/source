@@ -10,8 +10,8 @@ package net.evilblock.source.server.command
 import net.evilblock.cubed.command.Command
 import net.evilblock.cubed.command.data.flag.Flag
 import net.evilblock.cubed.command.data.parameter.Param
-import net.evilblock.cubed.util.bukkit.EnchantmentWrapper
 import net.evilblock.cubed.util.bukkit.ItemUtils
+import net.evilblock.cubed.util.bukkit.enchantment.EnchantmentWrapper
 import org.bukkit.ChatColor
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.entity.Player

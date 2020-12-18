@@ -10,6 +10,7 @@ import net.evilblock.pidgin.message.Message
 import net.evilblock.pidgin.message.handler.IncomingMessageHandler
 import net.evilblock.pidgin.message.listener.MessageListener
 import net.evilblock.source.Source
+import net.evilblock.source.server.announcement.event.AnnouncementBroadcastEvent
 import org.bson.Document
 import org.bson.json.JsonMode
 import org.bson.json.JsonWriterSettings
@@ -131,8 +132,19 @@ object AnnouncementHandler : MessageListener {
 
             val announcement = activeGroup.announcements[index.getAndIncrement()]
 
-            for (line in announcement.lines) {
-                Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', line))
+            val event = AnnouncementBroadcastEvent(ArrayList(Bukkit.getOnlinePlayers()))
+            event.call()
+
+            if (event.receivers.isEmpty()) {
+                return@asyncTimer
+            }
+
+            val lines = announcement.lines.map { ChatColor.translateAlternateColorCodes('&', it) }
+
+            for (player in event.receivers) {
+                for (line in lines) {
+                    player.sendMessage(line)
+                }
             }
         }
     }

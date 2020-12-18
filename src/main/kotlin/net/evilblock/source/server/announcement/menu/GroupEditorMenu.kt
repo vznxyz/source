@@ -129,20 +129,22 @@ class GroupEditorMenu(private val group: AnnouncementGroup) : PaginatedMenu() {
 
         override fun clicked(player: Player, slot: Int, clickType: ClickType, view: InventoryView) {
             if (clickType.isLeftClick) {
-                NumberPrompt(promptText = "${ChatColor.GREEN}Please input the new interval, in seconds.") { number ->
-                    if (number.toInt() < 1) {
-                        player.sendMessage("${ChatColor.RED}The interval must be at least 1 second!")
-                        return@NumberPrompt
-                    }
+                NumberPrompt()
+                    .withText("${ChatColor.GREEN}Please input the new interval, in seconds.")
+                    .acceptInput { number ->
+                        if (number.toInt() < 1) {
+                            player.sendMessage("${ChatColor.RED}The interval must be at least 1 second!")
+                            return@acceptInput
+                        }
 
-                    group.interval = number.toInt()
+                        group.interval = number.toInt()
 
-                    Tasks.async {
-                        AnnouncementHandler.saveGroup(group)
-                    }
+                        Tasks.async {
+                            AnnouncementHandler.saveGroup(group)
+                        }
 
-                    this@GroupEditorMenu.openMenu(player)
-                }.start(player)
+                        this@GroupEditorMenu.openMenu(player)
+                    }.start(player)
             }
         }
     }

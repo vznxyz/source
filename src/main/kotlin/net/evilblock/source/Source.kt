@@ -13,7 +13,7 @@ import net.evilblock.source.chat.command.ClearChatCommand
 import net.evilblock.source.chat.command.MuteChatCommand
 import net.evilblock.source.chat.command.SlowChatCommand
 import net.evilblock.source.chat.filter.ChatFilterHandler
-import net.evilblock.source.chat.filter.ChatFilterListeners
+import net.evilblock.source.chat.filter.listener.ChatFilterListeners
 import net.evilblock.source.chat.filter.command.ChatFilterEditorCommand
 import net.evilblock.source.chat.filter.command.ChatFilterImportDefaultsCommand
 import net.evilblock.source.chat.spam.ChatSpamListeners
