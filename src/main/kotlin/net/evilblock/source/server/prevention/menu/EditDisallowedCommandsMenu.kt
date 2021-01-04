@@ -8,6 +8,10 @@ import org.bukkit.entity.Player
 
 class EditDisallowedCommandsMenu : TextEditorMenu(lines = DisallowedCommandsHandler.disallowedCommands) {
 
+    override fun getPrePaginatedTitle(player: Player): String {
+        return "Disallowed Commands"
+    }
+
     override fun getPromptBuilder(player: Player, index: Int): EzPrompt.Builder {
         return EzPrompt.Builder()
             .promptText("${ChatColor.GREEN}Please input the new disallowed command.")

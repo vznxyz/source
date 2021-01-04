@@ -8,6 +8,7 @@
 package net.evilblock.source.captcha.listener
 
 import net.evilblock.cubed.util.bukkit.Tasks
+import net.evilblock.cubed.util.nms.MinecraftReflection
 import net.evilblock.source.Source
 import net.evilblock.source.captcha.CaptchaHandler
 import net.evilblock.source.captcha.menu.CaptchaMenu
@@ -45,6 +46,11 @@ object CaptchaPreventionListeners : Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     fun onPlayerJoinEvent(event: PlayerJoinEvent) {
         CaptchaHandler.applyGracePeriod(event.player)
+
+        if (MinecraftReflection.getHandle(event.player)::class.java.simpleName == "FakeEntityPlayer") {
+            CaptchaHandler.completedCaptcha(event.player.uniqueId)
+            return
+        }
 
         Tasks.delayed(10L) {
             if (event.player.isOp || event.player.hasPermission(Permissions.CAPTCHA_BYPASS)) {

@@ -12,6 +12,10 @@ import org.bukkit.entity.Player
 
 class EditAnnouncementLinesMenu(private val group: AnnouncementGroup, private val announcement: Announcement) : TextEditorMenu(lines = announcement.lines) {
 
+    override fun getPrePaginatedTitle(player: Player): String {
+        return "Edit Announcement Lines"
+    }
+
     override fun getPromptBuilder(player: Player, index: Int): EzPrompt.Builder {
         return EzPrompt.Builder()
             .promptText("${ChatColor.GREEN}Please input the new announcement text.")

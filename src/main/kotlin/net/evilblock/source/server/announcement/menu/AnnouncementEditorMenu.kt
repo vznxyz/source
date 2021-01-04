@@ -79,7 +79,7 @@ class AnnouncementEditorMenu : PaginatedMenu() {
                     .regex(EzPrompt.IDENTIFIER_REGEX)
                     .charLimit(16)
                     .promptText("${ChatColor.GREEN}Please input an ID for the announcement group.")
-                    .acceptInput { _, input ->
+                    .acceptInput { input ->
                         if (AnnouncementHandler.getGroupById(input) != null) {
                             player.sendMessage("${ChatColor.RED}That ID is already taken!")
                             return@acceptInput

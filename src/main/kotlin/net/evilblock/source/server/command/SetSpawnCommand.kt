@@ -1,6 +1,7 @@
 package net.evilblock.source.server.command
 
 import net.evilblock.cubed.command.Command
+import net.evilblock.source.Source
 import org.bukkit.ChatColor
 import org.bukkit.Location
 import org.bukkit.block.BlockFace
@@ -15,15 +16,18 @@ object SetSpawnCommand {
 
     @Command(
         names = ["setspawn"],
-        description = "Sets the world's spawn point",
+        description = "Sets the server spawn point",
         permission = "essentials.setspawn"
     )
     @JvmStatic
-    fun setspawn(sender: Player) {
+    fun execute(sender: Player) {
         val location = sender.location
         val face = yawToFace(location.yaw)
-        sender.world.spawnLocation = Location(location.world, location.blockX.toDouble(), location.blockY.toDouble(), location.blockZ.toDouble(), faceToYaw(face).toFloat(), 0.0F)
-        sender.sendMessage("${ChatColor.GOLD}Set the spawn for ${ChatColor.WHITE}${sender.world.name}${ChatColor.GOLD}.")
+
+        Source.instance.serverConfig.spawnLocation = Location(location.world, location.blockX.toDouble(), location.blockY.toDouble(), location.blockZ.toDouble(), faceToYaw(face).toFloat(), 0.0F)
+        Source.instance.saveServerConfig()
+
+        sender.sendMessage("${ChatColor.GOLD}Set the server spawn!")
     }
 
     private fun yawToFace(yaw: Float): BlockFace {

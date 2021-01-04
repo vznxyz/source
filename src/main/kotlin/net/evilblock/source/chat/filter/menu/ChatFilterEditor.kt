@@ -85,11 +85,11 @@ class ChatFilterEditor : PaginatedMenu() {
             if (clickType.isLeftClick) {
                 EzPrompt.Builder()
                     .promptText("${ChatColor.GREEN}Please input the new chat filter regex pattern.")
-                    .acceptInput { _, inputPattern ->
+                    .acceptInput { inputPattern ->
                         Tasks.delayed(1L) {
                             EzPrompt.Builder()
                                 .promptText("${ChatColor.GREEN}Please input the chat filter's description.")
-                                .acceptInput { _, inputDescription ->
+                                .acceptInput { inputDescription ->
                                     val chatFilter = ChatFilter(description = inputDescription, regex = inputPattern)
                                     ChatFilterHandler.trackFilter(chatFilter)
 
@@ -133,7 +133,7 @@ class ChatFilterEditor : PaginatedMenu() {
             if (clickType.isLeftClick) {
                 EzPrompt.Builder()
                     .promptText("${ChatColor.GREEN}Please input the new filter pattern.")
-                    .acceptInput { _, input ->
+                    .acceptInput { input ->
                         chatFilter.pattern = input.toRegex().toPattern()
 
                         Tasks.async {

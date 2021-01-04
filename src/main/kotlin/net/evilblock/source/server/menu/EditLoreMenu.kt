@@ -12,7 +12,7 @@ class EditLoreMenu(private val itemStack: ItemStack) : TextEditorMenu(lines = if
         supportsColors = true
     }
 
-    override fun getTitle(player: Player): String {
+    override fun getPrePaginatedTitle(player: Player): String {
         return "Edit Lore"
     }
 

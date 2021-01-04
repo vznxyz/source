@@ -15,8 +15,21 @@ object ReloadCommand {
     )
     @JvmStatic
     fun execute(sender: CommandSender) {
-        Source.instance.reloadConfig()
-        sender.sendMessage("${ChatColor.GREEN}Reloaded the Source configuration!")
+        try {
+            Source.instance.reloadConfig()
+            sender.sendMessage("${ChatColor.GREEN}Successfully reloaded Source/config.yml!")
+        } catch (e: Exception) {
+            e.printStackTrace()
+            sender.sendMessage("${ChatColor.RED}Failed to reload Source/config.yml!")
+        }
+
+        try {
+            Source.instance.loadServerConfig()
+            sender.sendMessage("${ChatColor.GREEN}Successfully reloaded Source/server-config.json!")
+        } catch (e: Exception) {
+            e.printStackTrace()
+            sender.sendMessage("${ChatColor.RED}Failed to reload Source/server-config.yml!")
+        }
     }
 
 }

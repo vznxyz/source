@@ -1,5 +1,7 @@
 package net.evilblock.source
 
+import com.google.common.io.Files
+import com.google.gson.reflect.TypeToken
 import net.evilblock.cubed.Cubed
 import net.evilblock.cubed.CubedOptions
 import net.evilblock.cubed.command.CommandHandler
@@ -19,6 +21,7 @@ import net.evilblock.source.chat.filter.command.ChatFilterImportDefaultsCommand
 import net.evilblock.source.chat.spam.ChatSpamListeners
 import net.evilblock.source.messaging.command.*
 import net.evilblock.source.messaging.listener.ChatIgnoreListeners
+import net.evilblock.source.server.ServerConfig
 import net.evilblock.source.server.prevention.DisallowedCommandsHandler
 import net.evilblock.source.server.announcement.AnnouncementHandler
 import net.evilblock.source.server.announcement.command.AnnouncementEditorCommand
@@ -31,10 +34,17 @@ import net.evilblock.source.server.prevention.command.DisallowedCommandsEditorCo
 import net.evilblock.source.util.Permissions
 import org.bukkit.ChatColor
 import org.bukkit.plugin.java.JavaPlugin
+import java.io.File
 
 class Source : JavaPlugin() {
 
+    companion object {
+        @JvmStatic
+        lateinit var instance: Source
+    }
+
     lateinit var pidgin: Pidgin
+    lateinit var serverConfig: ServerConfig
 
     override fun onEnable() {
         instance = this
@@ -47,6 +57,8 @@ class Source : JavaPlugin() {
         pidgin.registerListener(AnnouncementHandler)
         pidgin.registerListener(ChatFilterHandler)
         pidgin.registerListener(DisallowedCommandsHandler)
+
+        loadServerConfig()
 
         AnnouncementHandler.initialLoad()
         ChatFilterHandler.initialLoad()
@@ -117,9 +129,22 @@ class Source : JavaPlugin() {
         }
     }
 
-    companion object {
-        @JvmStatic
-        lateinit var instance: Source
+    fun loadServerConfig() {
+        val configFile = File(File(dataFolder, "internal"), "server-config.json")
+        if (configFile.exists()) {
+            Files.newReader(configFile, Charsets.UTF_8).use { reader ->
+                serverConfig = Cubed.gson.fromJson(reader.readLine(), object : TypeToken<ServerConfig>() {}.type)
+            }
+        } else {
+            serverConfig = ServerConfig()
+        }
+    }
+
+    fun saveServerConfig() {
+        val configFile = File(File(dataFolder, "internal"), "server-config.json")
+        configFile.parentFile.mkdirs()
+
+        Files.write(Cubed.gson.toJson(serverConfig), configFile, Charsets.UTF_8)
     }
 
 }

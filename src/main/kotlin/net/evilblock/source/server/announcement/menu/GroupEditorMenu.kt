@@ -87,7 +87,7 @@ class GroupEditorMenu(private val group: AnnouncementGroup) : PaginatedMenu() {
             if (clickType.isLeftClick) {
                 EzPrompt.Builder()
                     .promptText("${ChatColor.GREEN}Please input the first line of the announcement.")
-                    .acceptInput { _, input ->
+                    .acceptInput { input ->
                         Tasks.async {
                             val announcement = Announcement(lines = arrayListOf(input))
                             group.announcements.add(announcement)
