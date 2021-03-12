@@ -1,7 +1,7 @@
-name: "Source"
-version: "1.0"
-authors: ["EvilBlock", "joeleoli"]
-description: "Essential server features"
-main: "net.evilblock.source.Source"
+name: Source
+version: 1.2
+author: joeleoli
+description: "Essential server features and management tools"
+main: com.minexd.source.Source
 depend:
   - Cubed

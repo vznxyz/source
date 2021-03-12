@@ -6,8 +6,8 @@ plugins {
     id 'com.github.johnrengelman.shadow' version '5.2.0'
 }
 
-group 'net.evilblock'
-version '1.0'
+group 'com.minexd'
+version '1.2'
 
 repositories {
     mavenLocal()
@@ -28,10 +28,10 @@ repositories {
 
 dependencies {
     compileOnly 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.61'
-    compileOnly 'org.spigotmc:spigot-api:1.12.2-R0.1-SNAPSHOT'
-    compileOnly 'org.bukkit:bukkit:1.12.2-R0.1-SNAPSHOT'
-    compileOnly 'net.evilblock:cubed:1.1'
-    implementation 'net.evilblock:pidgin:1.2'
+    compileOnly 'com.minexd:paper:1.8.8'
+    compileOnly 'com.minexd:paper-api:1.8.8'
+    compileOnly 'net.evilblock.cubed:bukkit:1.2'
+    compileOnly 'net.evilblock:pidgin:1.2'
     compileOnly fileTree(dir: 'lib', include: '*.jar')
 }
 
@@ -63,6 +63,5 @@ publishing {
 
 tasks.withType(Jar) {
     def home = System.properties['user.home']
-    destinationDirectory = file("$home/Desktop/@MineJunkie DEV/shared")
-//    destinationDirectory = file("$home/Desktop/@MineJunkie DEV/Prison/plugins")
+    destinationDirectory = file("$home/Desktop/@MineXD/shared/global")
 }
