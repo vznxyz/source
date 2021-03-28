@@ -84,6 +84,7 @@ class Source : JavaPlugin() {
         CommandHandler.registerClass(GamemodeCommands.javaClass)
         CommandHandler.registerClass(HeadCommand.javaClass)
         CommandHandler.registerClass(HealCommand.javaClass)
+        CommandHandler.registerClass(MoreCommand.javaClass)
         CommandHandler.registerClass(PingCommand.javaClass)
         CommandHandler.registerClass(RenameCommand.javaClass)
         CommandHandler.registerClass(RepairCommand.javaClass)

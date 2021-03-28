@@ -6,6 +6,7 @@ import net.evilblock.pidgin.message.Message
 import net.evilblock.pidgin.message.handler.IncomingMessageHandler
 import net.evilblock.pidgin.message.listener.MessageListener
 import com.minexd.source.Source
+import org.bukkit.ChatColor
 import java.util.*
 
 object ChatFilterHandler : MessageListener {
@@ -73,8 +74,9 @@ object ChatFilterHandler : MessageListener {
     }
 
     fun filterMessage(message: String): ChatFilter? {
+        val message = ChatColor.stripColor(ChatColor.translateAlternateColorCodes('&', message)).toLowerCase()
         for (filter in filters.values) {
-            if (filter.pattern.matcher(message.toLowerCase()).find()) {
+            if (filter.pattern.matcher(message).find()) {
                 return filter
             }
         }

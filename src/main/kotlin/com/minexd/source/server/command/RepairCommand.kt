@@ -17,22 +17,22 @@ object RepairCommand {
     fun repair(sender: Player) {
         val item = sender.itemInHand
         if (item == null) {
-            sender.sendMessage("${ChatColor.RED}You must be holding an item.")
+            sender.sendMessage("${ChatColor.RED}You must be holding an item!")
             return
         }
 
         if (!Enchantment.DURABILITY.canEnchantItem(item)) {
-            sender.sendMessage("${ChatColor.RED}${ItemUtils.getName(item)} cannot be repaired.")
+            sender.sendMessage("${ChatColor.RED}${ItemUtils.getName(item)} cannot be repaired!")
             return
         }
 
         if (item.durability.toInt() == 0) {
-            sender.sendMessage("${ChatColor.RED}That ${ChatColor.WHITE}${ItemUtils.getName(item)}${ChatColor.RED} already has max durability.")
+            sender.sendMessage("${ChatColor.RED}That ${ChatColor.WHITE}${ItemUtils.getName(item)}${ChatColor.RED} already has max durability!")
             return
         }
 
         item.durability = 0.toShort()
-        sender.sendMessage("${ChatColor.RED}Your ${ChatColor.WHITE}${ItemUtils.getName(item)} ${ChatColor.GOLD}has been repaired.")
+        sender.sendMessage("${ChatColor.GOLD}Your ${ChatColor.WHITE}${ItemUtils.getName(item)} ${ChatColor.GOLD}has been repaired!")
     }
 
 }
