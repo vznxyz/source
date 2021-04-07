@@ -140,7 +140,7 @@ class Source : JavaPlugin() {
     }
     
     fun getSpawnLocation(): Location {
-        return serverConfig.spawnLocation ?: server.worlds[0].spawnLocation
+        return serverConfig.spawnLocation?.clone() ?: server.worlds[0].spawnLocation
     }
 
 }

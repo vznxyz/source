@@ -37,13 +37,7 @@ object AnnouncementHandler : MessageListener {
 
         fetchGroups()
 
-        activeGroup =
-            getGroupById(
-                Source.instance.config.getString(
-                    "announcements.active-group",
-                    "Hub"
-                )
-            )
+        activeGroup = getGroupById(Source.instance.config.getString("announcements.active-group", "Hub"))
 
         if (activeGroup != null) {
             startTask()
@@ -91,11 +85,7 @@ object AnnouncementHandler : MessageListener {
 
         val iterator = mongoCollection.find().iterator()
         while (iterator.hasNext()) {
-            groups.add(
-                deserializeDocument(
-                    iterator.next()
-                )
-            )
+            groups.add(deserializeDocument(iterator.next()))
         }
 
         AnnouncementHandler.groups = groups
@@ -143,9 +133,7 @@ object AnnouncementHandler : MessageListener {
 
             val announcement = activeGroup.announcements[index.getAndIncrement()]
 
-            val event = AnnouncementBroadcastEvent(
-                ArrayList(Bukkit.getOnlinePlayers())
-            )
+            val event = AnnouncementBroadcastEvent(ArrayList(Bukkit.getOnlinePlayers()))
             event.call()
 
             if (event.receivers.isEmpty()) {
