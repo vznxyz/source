@@ -8,7 +8,7 @@ import org.bukkit.entity.Player
 object EditLoreCommand {
 
     @Command(
-        names = ["lore", "editlore"],
+        names = ["lore", "editlore", "edit-lore"],
         description = "Edit your lore using a text editor",
         permission = "op"
     )
