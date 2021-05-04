@@ -76,6 +76,7 @@ class Source : JavaPlugin() {
         CommandHandler.registerClass(SlowChatCommand.javaClass)
 
         CommandHandler.registerClass(EditLoreCommand.javaClass)
+        CommandHandler.registerClass(ItemFlagCommands.javaClass)
         CommandHandler.registerClass(BroadcastCommand.javaClass)
         CommandHandler.registerClass(ClearCommand.javaClass)
         CommandHandler.registerClass(ColorsCommand.javaClass)

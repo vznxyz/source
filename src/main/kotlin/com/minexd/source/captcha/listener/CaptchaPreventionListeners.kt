@@ -7,6 +7,7 @@
 
 package com.minexd.source.captcha.listener
 
+import com.minexd.source.Source
 import net.evilblock.cubed.util.bukkit.Tasks
 import net.evilblock.cubed.util.nms.MinecraftReflection
 import com.minexd.source.captcha.CaptchaHandler
@@ -49,12 +50,16 @@ object CaptchaPreventionListeners : Listener {
             return
         }
 
-        Tasks.delayed(10L) {
-            if (event.player.isOp || event.player.hasPermission(Permissions.CAPTCHA_BYPASS)) {
-                CaptchaHandler.completedCaptcha(event.player.uniqueId)
-            } else {
-                CaptchaMenu().openMenu(event.player)
+        if (Source.instance.config.getBoolean("captcha")) {
+            Tasks.delayed(10L) {
+                if (event.player.isOp || event.player.hasPermission(Permissions.CAPTCHA_BYPASS)) {
+                    CaptchaHandler.completedCaptcha(event.player.uniqueId)
+                } else {
+                    CaptchaMenu().openMenu(event.player)
+                }
             }
+        } else {
+            CaptchaHandler.completedCaptcha(event.player.uniqueId)
         }
     }
 

@@ -15,7 +15,7 @@ object EditLoreCommand {
     @JvmStatic
     fun execute(player: Player) {
         if (player.inventory.itemInHand == null) {
-            player.sendMessage("${ChatColor.RED}You must be holding an item.")
+            player.sendMessage("${ChatColor.RED}You must be holding an item!")
             return
         }
 

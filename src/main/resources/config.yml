@@ -4,3 +4,5 @@ register-spawn-command: true
 # Announcement settings
 announcements:
   active-group: "Hub"
+
+captcha: true
