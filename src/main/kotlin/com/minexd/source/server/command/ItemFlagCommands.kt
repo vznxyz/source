@@ -8,7 +8,6 @@ import org.bukkit.Color
 import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemFlag
-import org.bukkit.inventory.meta.LeatherArmorMeta
 
 object ItemFlagCommands {
 
@@ -71,6 +70,30 @@ object ItemFlagCommands {
         }
 
         ItemUtils.colorLeatherArmor(item, Color.fromRGB(colorValue))
+
+        player.updateInventory()
+        player.sendMessage("${ChatColor.GREEN}Armor has been colored!")
+    }
+
+    @Command(
+        names = ["color-armor"],
+        description = "Colors leather armor",
+        permission = "op"
+    )
+    @JvmStatic
+    fun colorArmorRGB(player: Player, @Param(name = "r") r: Int, @Param(name = "g") g: Int, @Param(name = "b") b: Int) {
+        if (player.inventory.itemInHand == null) {
+            player.sendMessage("${ChatColor.RED}You must be holding an item!")
+            return
+        }
+
+        val item = player.inventory.itemInHand
+        if (!LEATHER_ARMOR.contains(item.type)) {
+            player.sendMessage("${ChatColor.RED}You must be holding a piece of leather armor!")
+            return
+        }
+
+        ItemUtils.colorLeatherArmor(item, Color.fromRGB(r, g, b))
 
         player.updateInventory()
         player.sendMessage("${ChatColor.GREEN}Armor has been colored!")

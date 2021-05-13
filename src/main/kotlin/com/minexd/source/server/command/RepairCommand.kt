@@ -3,20 +3,21 @@ package com.minexd.source.server.command
 import net.evilblock.cubed.command.Command
 import net.evilblock.cubed.util.bukkit.ItemUtils
 import org.bukkit.ChatColor
+import org.bukkit.Material
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.entity.Player
 
 object RepairCommand {
 
     @Command(
-        names = ["repair"],
+        names = ["repair", "fix"],
         description = "Repair the item you're currently holding",
         permission = "essentials.repair"
     )
     @JvmStatic
     fun repair(sender: Player) {
         val item = sender.itemInHand
-        if (item == null) {
+        if (item == null || item.type == Material.AIR) {
             sender.sendMessage("${ChatColor.RED}You must be holding an item!")
             return
         }
@@ -26,7 +27,7 @@ object RepairCommand {
             return
         }
 
-        if (item.durability.toInt() == 0) {
+        if (item.durability == item.type.maxDurability) {
             sender.sendMessage("${ChatColor.RED}That ${ChatColor.WHITE}${ItemUtils.getName(item)}${ChatColor.RED} already has max durability!")
             return
         }

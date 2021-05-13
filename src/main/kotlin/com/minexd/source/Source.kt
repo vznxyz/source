@@ -22,6 +22,7 @@ import com.minexd.source.server.prevention.BlockedCommandsHandler
 import com.minexd.source.server.announcement.AnnouncementHandler
 import com.minexd.source.server.announcement.command.AnnouncementEditorCommand
 import com.minexd.source.server.command.*
+import com.minexd.source.server.inventory.TrackedPlayerInventoryListeners
 import com.minexd.source.server.listener.ColoredSignListeners
 import com.minexd.source.server.listener.DisableAchievementsListeners
 import com.minexd.source.server.prevention.listener.BlockedCommandsListeners
@@ -82,7 +83,10 @@ class Source : JavaPlugin() {
         CommandHandler.registerClass(ColorsCommand.javaClass)
         CommandHandler.registerClass(CraftCommand.javaClass)
         CommandHandler.registerClass(EnchantCommand.javaClass)
+        CommandHandler.registerClass(EnderChestCommand.javaClass)
+        CommandHandler.registerClass(TrashCommand.javaClass)
         CommandHandler.registerClass(GamemodeCommands.javaClass)
+        CommandHandler.registerClass(PlayerTimeCommand.javaClass)
         CommandHandler.registerClass(HeadCommand.javaClass)
         CommandHandler.registerClass(HealCommand.javaClass)
         CommandHandler.registerClass(MoreCommand.javaClass)
@@ -92,6 +96,7 @@ class Source : JavaPlugin() {
         CommandHandler.registerClass(SpeedCommand.javaClass)
         CommandHandler.registerClass(SudoCommands.javaClass)
         CommandHandler.registerClass(FeedCommand.javaClass)
+        CommandHandler.registerClass(InventorySeeCommand.javaClass)
         CommandHandler.registerClass(TeleportationCommands.javaClass)
         CommandHandler.registerClass(WorldCommand.javaClass)
 
@@ -112,6 +117,7 @@ class Source : JavaPlugin() {
         server.pluginManager.registerEvents(DisableAchievementsListeners, this)
         server.pluginManager.registerEvents(HeadNameListeners, this)
         server.pluginManager.registerEvents(TeleportationListeners, this)
+        server.pluginManager.registerEvents(TrackedPlayerInventoryListeners, this)
     }
 
     fun systemLog(log: String) {
