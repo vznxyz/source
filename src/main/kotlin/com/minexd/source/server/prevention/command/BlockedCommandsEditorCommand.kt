@@ -8,7 +8,7 @@ import org.bukkit.entity.Player
 object BlockedCommandsEditorCommand {
 
     @Command(
-        names = ["source disallowed-cmds editor"],
+        names = ["source disallowed-cmds"],
         description = "Opens the Disallowed Commands editor",
         permission = Permissions.DISALLOWED_COMMANDS_EDITOR
     )

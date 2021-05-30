@@ -6,3 +6,5 @@ announcements:
   active-group: "Hub"
 
 captcha: true
+
+near-radius: 256

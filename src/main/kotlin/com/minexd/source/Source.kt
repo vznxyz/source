@@ -23,11 +23,8 @@ import com.minexd.source.server.announcement.AnnouncementHandler
 import com.minexd.source.server.announcement.command.AnnouncementEditorCommand
 import com.minexd.source.server.command.*
 import com.minexd.source.server.inventory.TrackedPlayerInventoryListeners
-import com.minexd.source.server.listener.ColoredSignListeners
-import com.minexd.source.server.listener.DisableAchievementsListeners
+import com.minexd.source.server.listener.*
 import com.minexd.source.server.prevention.listener.BlockedCommandsListeners
-import com.minexd.source.server.listener.HeadNameListeners
-import com.minexd.source.server.listener.TeleportationListeners
 import com.minexd.source.server.prevention.command.BlockedCommandsEditorCommand
 import com.minexd.source.util.Permissions
 import net.evilblock.cubed.serializers.Serializers
@@ -82,6 +79,7 @@ class Source : JavaPlugin() {
         CommandHandler.registerClass(ClearCommand.javaClass)
         CommandHandler.registerClass(ColorsCommand.javaClass)
         CommandHandler.registerClass(CraftCommand.javaClass)
+        CommandHandler.registerClass(NearCommand.javaClass)
         CommandHandler.registerClass(EnchantCommand.javaClass)
         CommandHandler.registerClass(EnderChestCommand.javaClass)
         CommandHandler.registerClass(TrashCommand.javaClass)
@@ -114,6 +112,7 @@ class Source : JavaPlugin() {
 
         server.pluginManager.registerEvents(ColoredSignListeners, this)
         server.pluginManager.registerEvents(BlockedCommandsListeners, this)
+        server.pluginManager.registerEvents(CommandListeners, this)
         server.pluginManager.registerEvents(DisableAchievementsListeners, this)
         server.pluginManager.registerEvents(HeadNameListeners, this)
         server.pluginManager.registerEvents(TeleportationListeners, this)
@@ -148,6 +147,10 @@ class Source : JavaPlugin() {
     
     fun getSpawnLocation(): Location {
         return serverConfig.spawnLocation?.clone() ?: server.worlds[0].spawnLocation
+    }
+
+    fun getNearRadius(): Int {
+        return config.getInt("near-radius", 256)
     }
 
 }
